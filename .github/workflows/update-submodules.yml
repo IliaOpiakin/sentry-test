@@ -6,12 +6,23 @@ on:
   workflow_dispatch: # Allows manual triggering of the workflow
 
 jobs:
+  select-runner-deployment:
+    name: select-runner-deployment
+    runs-on: default
+    outputs:
+      runner: ${{ env.RUNNER_DEPLOYMENT }}
+    steps:
+      - run: echo "RUNNER_DEPLOYMENT=default" >> $GITHUB_ENV
+ 
   update-submodules:
-    runs-on: ubuntu-latest
+    needs: [select-runner-deployment]
+    runs-on: ${{ needs.select-runner-deployment.outputs.runner }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.CI_AUTH_TOKEN }}
         with:
           submodules: true # Checkout submodules
 
